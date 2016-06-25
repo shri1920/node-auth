@@ -1,0 +1,16 @@
+{
+  "name": "token_based_authentication_using_redis",
+  "version": "1.0.0",
+  "description": "Token based authentication for web/mobile applications",
+  "main": "authentication.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "shrisha.sb@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "redis": "^2.6.2"
+  }
+}
