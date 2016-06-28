@@ -15,9 +15,9 @@ app.set('port', process.env.PORT || 5100);
 
 router = express.Router();
 // Api to set the session
-router.post('/login', route.setSession);
+router.post('/login', route.logIn);
 // Api to destroy the user session
-router.post('/logout', route.destroySession);
+router.post('/logout', route.logOut);
 // Api to register the user to the system
 router.post('/registeruser', route.registerUser);
 // Api to remove the user from the system
