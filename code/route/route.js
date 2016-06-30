@@ -1,5 +1,5 @@
 /*jslint node:true*/
-var user = require('../authentication/user');
+var user = require('../utils/user');
 
 // Function to initiate the use session
 exports.logIn = function (req, res) {

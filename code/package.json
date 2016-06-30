@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cradle": "^0.7.1",
     "express": "^4.14.0",
     "redis": "^2.6.2"
   }
