@@ -1,7 +1,7 @@
 /*jslint node:true*/
-module.exports = function () {
+var Config = function () {
     "use strict";
-    var url = require('url'), couchdb = url.parse('http://localhost:5984/'), getPort, userName, passwd;
+    var url = require('url'), couchdb = url.parse('http://localhost:5984'), getPort, userName, passwd;
     getPort = function getPort(couchdb) {
         var port;
         if (couchdb.port) {
@@ -14,9 +14,10 @@ module.exports = function () {
         passwd   = couchdb.auth.split(':')[1];
     }
     return {
-        couchdbHost     : couchdb.protocol + "//" + couchdb.hostname + couchdb.pathname,
+        couchdbHost     : couchdb.protocol + "//" + couchdb.hostname,
         couchdbPort     : getPort(couchdb),
         couchdbUserName : userName,
         couchdbPassword : passwd
     };
 };
+module.exports = new Config();

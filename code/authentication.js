@@ -17,11 +17,11 @@ router = express.Router();
 // Api to set the session
 router.post('/login', route.logIn);
 // Api to destroy the user session
-router.post('/logout', route.logOut);
+//router.post('/logout', route.logOut);
 // Api to register the user to the system
 router.post('/registeruser', route.registerUser);
 // Api to remove the user from the system
-router.post('/removeuser', route.removeUser);
+//router.post('/removeuser', route.removeUser);
 // Register the router
 app.use('/', router);
 

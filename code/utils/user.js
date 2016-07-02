@@ -1,60 +1,47 @@
 /*jslint node:true*/
 var User = function () {
     "use strict";
-    var findUser,
-        geteToken,
+    var crypto = require('crypto'),
+        utils  = require('./utils'),
         registerUser,
-        crypto = require('crypto');
-    /* 
-        Function to check whether the user is in the system or not 
-    */
-    findUser = function (docId, callback) {
-        var dbName = '_users';
-        Utils.getDoc(dbName, docId, function (error, success) {
-            if (error) {
-                if (callback && typeof callback === "function") {
-                    callback('not found');
-                }
-                return;
-            }
-            if (callback && typeof callback === "function") {
-                callback('found');
-            }
-        });
-    };
-    /*
-        Function to set the session for user
-    */
-    geteToken = function (userId, callback) {
-        var tokenLength = 32;
-        crypto.randomBytes(tokenLength, function (error, token) {
-            if (error) {
-                if (callback && typeof callback === "function") {
-                    callback(error, undefined);
-                }
-            }
-            if (callback && typeof callback === "function") {
-                callback(undefined, token.toString('hex'));
-            }
-        });
-    };
-    /*
-        Function to Register the user
-    */
+        getToken;
+    // Function to Register the user
     registerUser = function (options, callback) {
-        findUser(options.userId, function (status) {
-            if (status === 'found') {
+        utils.createUser(options, function (error, scuuess) {
+            callback(error, scuuess);
+        });
+    };
+    // Function to set the session for user
+    getToken = function (userId, passwd, callback) {
+        var tokenLength = 32;
+        utils.findUser(userId, function (error, result) {
+            // Send Back error message if user does not exists
+            if (error) {
+                callback(error, undefined);
                 return;
             }
-            if (typeof callback === "function") {
-                callback();
+            // Send Back error message if password mismatch
+            if (result.passwd !== utils.createHash(passwd)) {
+                callback({"status": "401", "reason": "login failed"});
+                return;
             }
+            // Generate Token if User is available  
+            crypto.randomBytes(tokenLength, function (error, token) {
+                if (error) {
+                    callback(error, undefined);
+                    return;
+                }
+                callback(undefined, {
+                    accessToken : token.toString('hex'),
+                    tokenType   : "bearer",
+                    scope       : "read write"
+                });
+            });
         });
     };
     return {
-        findUser    : findUser,
-        geteToken   : geteToken,
-        registerUser: registerUser
+        registerUser : registerUser,
+        getToken : getToken
     };
 };
 module.exports = new User();

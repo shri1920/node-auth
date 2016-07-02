@@ -1,54 +1,57 @@
 /*jslint node:true*/
 var user = require('../utils/user');
 
+// Function to register new user
+exports.registerUser = function (req, res) {
+    "use strict";
+    /*
+        curl -X POST http://localhost:5100/registeruser
+             -H "Content-Type: application/json"
+             -d '{"userId": "someone@example.com", "passwd": "123456", "firstName": "Fname", "lastName": "Lname"}'
+    */
+    var options = req.body || {};
+    if (!options.userId || !options.passwd || !options.firstName) {
+        res.status(400).json({code: "MISSING_PARAMETER", msg: "require parameter missing"});
+        return;
+    }
+    console.log("[Register User] | Request received from " + options.userId);
+    user.registerUser(options, function (error, success) {
+        if (error) {
+            if (error.status === "409") {
+                console.log("[Register User] | User registered already" + options.userId);
+                res.status(409).json({"msg": "user registered already"});
+                return;
+            }
+            console.log("[Register User] | error creating user" + options.userId);
+            res.status(400).json({"msg": "error creating user"});
+            return;
+        }
+        res.status(201).json({"msg": success});
+    });
+};
+
 // Function to initiate the use session
 exports.logIn = function (req, res) {
     "use strict";
+    /*
+        curl -X POST http://localhost:5100/login
+             -H "Content-Type: application/json"
+             -d '{"userId": "someone@example.com", "passwd": "123456"}'
+    */
     var userId = req.body.userId,
         passwd = req.body.passwd;
     // userId and passwd are require field for login
     if (!userId && !passwd) {
-        res.status(400).json({code: "MISSING_PARAMETER", msg: "require parameter email and passwd is missing"});
+        res.status(401).json({msg: "login failed"});
         return;
     }
-    user.findUser(userId, passwd, function (error, validUser) {
-        if (error && !validUser) {
-            res.status(400).json({code: "NOT_FOUND", msg: "user not found"});
-            return;
-        }
-        user.getteToken(userId, function (error, token) {
-            if (error) {
-                res.status(500).json({code: "LOGIN_ERROR", msg: "not able authenticate"});
-                return;
-            }
-            res.status(200).json({accessToken: token, token_type: "bearer"});
-        });
-    });
-};
-
-// Function to destroy the user session
-exports.logOut = function () {
-    "use strict";
-};
-
-// Function to register the user
-exports.registerUser = function (req, res) {
-    "use strict";
-    var options = req.body || {};
-    if (!options.userId && !options.passwd && !options.firstName && !options.lastName) {
-        res.status(400).json({code: "MISSING_PARAMETER", msg: "require parameter missing"});
-        return;
-    }
-    user.registerUser(options, function (error, status) {
+    console.log("[Login] | Request received from " + userId);
+    user.getToken(userId, passwd, function (error, token) {
         if (error) {
-            res.status(400).json({msg: ""});
+            console.log("[Login] | Login failed " + userId);
+            res.status(401).json({msg: "login failed"});
             return;
         }
-        res.status(200).json({msg: status});
+        res.status(200).json(token);
     });
-};
-
-// Function to remove the user
-exports.removeUser = function () {
-    "use strict";
 };
