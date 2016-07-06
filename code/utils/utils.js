@@ -49,11 +49,11 @@ Utils = function () {
                 var connection = createConnection(),
                     db = setDatabase(connection, "_users");
                 db.save("org.couchdb.user:" + options.userId, {
-                    name      : options.userId,
-                    firstName : options.firstName,
-                    passwd    : createHash(options.passwd),
-                    roles     : [],
-                    type      : "user"
+                    name          : options.userId,
+                    firstName     : options.firstName,
+                    confirmPasswd : createHash(options.passwd),
+                    roles         : [],
+                    type          : "user"
                 }, function (error, result) {
                     if (callback && typeof callback === "function") {
                         callback(error, result);

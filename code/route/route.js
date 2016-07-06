@@ -55,3 +55,19 @@ exports.logIn = function (req, res) {
         res.status(200).json(token);
     });
 };
+
+// Function to Exire the User Session
+exports.logOut = function (req, res) {
+    "use strict";
+    if (!req.headers.authorization) {
+        res.status(401).json({msg: "unauthorized"});
+        return;
+    }
+    user.expireToken(req.headers.authorization, function (error, token) {
+        if (error) {
+            res.status(400).json({msg: ""});
+            return;
+        }
+        res.status(200).json({msg: "token expired"});
+    });
+};

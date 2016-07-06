@@ -3,8 +3,10 @@ var User = function () {
     "use strict";
     var crypto = require('crypto'),
         utils  = require('./utils'),
+        redis  = require('./redisHelper'),
         registerUser,
-        getToken;
+        getToken,
+        expireToken;
     // Function to Register the user
     registerUser = function (options, callback) {
         utils.createUser(options, function (error, scuuess) {
@@ -39,9 +41,20 @@ var User = function () {
             });
         });
     };
+    expireToken = function (authHeader, callback) {
+        var token;
+        if (authHeader) {
+            authHeader = authHeader.split(" ");
+            token = authHeader[1];
+            redis.delToken(token, function () {
+                callback();
+            });
+        }
+    };
     return {
         registerUser : registerUser,
-        getToken : getToken
+        getToken : getToken,
+        expireToken : expireToken
     };
 };
 module.exports = new User();
