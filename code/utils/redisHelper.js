@@ -1,17 +1,22 @@
 /*jslint node:true*/
 var Redis = function () {
     "use strict";
-    var redis = require('redis'), rClient = redis.createClient(), setToken, getToken, delToken;
+    var redis = require('redis'),
+        redisClient = redis.createClient("6379", "127.0.0.1"),
+        set,
+        get,
+        del;
     // Function to set Token with related data
-    setToken = function (info, callback) {
+    set = function (info, callback) {
         var TIME_TO_LIVE = 60 * 60 * 24, authInfo;
         authInfo = {
             userId: info.userId,
             tokenType: info.tokenType,
             scope: info.scope
         };
-        rClient.setex(info.token, TIME_TO_LIVE, JSON.stringify(authInfo), function (error, success) {
+        redisClient.setex(info.accessToken, TIME_TO_LIVE, JSON.stringify(authInfo), function (error, success) {
             if (error) {
+                console.log("test");
                 callback(error);
                 return;
             }
@@ -19,16 +24,16 @@ var Redis = function () {
         });
     };
     // Function to get Token information
-    getToken = function () {
+    get = function () {
         
     };
     // Function to expire Token
-    delToken = function (token, callback) {
+    del = function (token, callback) {
         if (!token) {
             callback();
             return;
         }
-        rClient.del(token, function (error, success) {
+        redisClient.del(token, function (error, success) {
             if (error) {
                 callback(error);
                 return;
@@ -41,9 +46,9 @@ var Redis = function () {
         });
     };
     return {
-        setToken : setToken,
-        getToken : getToken,
-        delToken : delToken
+        set: set,
+        get: get,
+        del: del
     };
 };
 module.exports = new Redis();

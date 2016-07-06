@@ -52,7 +52,17 @@ exports.logIn = function (req, res) {
             res.status(401).json({msg: "login failed"});
             return;
         }
-        res.status(200).json(token);
+        token.userId = userId;
+        user.storeToken(token, function (error, success) {
+            if (error) {
+                console.log("[Login] | Login failed " + userId);
+                res.status(401).json({msg: "login failed"});
+                return;
+            }
+            if (success) {
+                res.status(200).json(token);
+            }
+        });
     });
 };
 
@@ -63,11 +73,13 @@ exports.logOut = function (req, res) {
         res.status(401).json({msg: "unauthorized"});
         return;
     }
-    user.expireToken(req.headers.authorization, function (error, token) {
+    user.expireToken(req.headers.authorization, function (error, success) {
         if (error) {
             res.status(400).json({msg: ""});
             return;
         }
-        res.status(200).json({msg: "token expired"});
+        if (success) {
+            res.status(200).json({msg: "token expired"});
+        }
     });
 };

@@ -6,6 +6,7 @@ var User = function () {
         redis  = require('./redisHelper'),
         registerUser,
         getToken,
+        storeToken,
         expireToken;
     // Function to Register the user
     registerUser = function (options, callback) {
@@ -41,19 +42,27 @@ var User = function () {
             });
         });
     };
+    // Function to store the token and user info in key value store
+    storeToken = function (token, callback) {
+        redis.set(token, function (error, success) {
+            callback(error, success);
+        });
+    };
+    // Function to remove the token from key value store
     expireToken = function (authHeader, callback) {
         var token;
         if (authHeader) {
             authHeader = authHeader.split(" ");
             token = authHeader[1];
-            redis.delToken(token, function () {
-                callback();
+            redis.del(token, function (error, success) {
+                callback(error, success);
             });
         }
     };
     return {
         registerUser : registerUser,
         getToken : getToken,
+        storeToken : storeToken,
         expireToken : expireToken
     };
 };
