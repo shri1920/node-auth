@@ -7,7 +7,8 @@ var User = function () {
         registerUser,
         getToken,
         storeToken,
-        expireToken;
+        expireToken,
+        recoverPasswd;
     // Function to Register the user
     registerUser = function (options, callback) {
         utils.createUser(options, function (error, scuuess) {
@@ -59,11 +60,24 @@ var User = function () {
             });
         }
     };
+    // Function to recover passwd of a user
+    recoverPasswd = function (userId, callback) {
+        utils.findUser(userId, function (error, result) {
+            if (error) {
+                callback(error, undefined);
+                return;
+            }
+            if (result) {
+                // mail the link to recover passwd
+            }
+        });
+    };
     return {
         registerUser : registerUser,
         getToken : getToken,
         storeToken : storeToken,
-        expireToken : expireToken
+        expireToken : expireToken,
+        recoverPasswd : recoverPasswd
     };
 };
 module.exports = new User();

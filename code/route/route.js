@@ -42,14 +42,14 @@ exports.logIn = function (req, res) {
         passwd = req.body.passwd;
     // userId and passwd are require field for login
     if (!userId && !passwd) {
-        res.status(401).json({msg: "login failed"});
+        res.status(400).json({msg: "bad request"});
         return;
     }
     console.log("[Login] | Request received from " + userId);
     user.getToken(userId, passwd, function (error, token) {
         if (error) {
             console.log("[Login] | Login failed " + userId);
-            res.status(401).json({msg: "login failed"});
+            res.status(400).json({msg: "login failed"});
             return;
         }
         token.userId = userId;
@@ -82,4 +82,42 @@ exports.logOut = function (req, res) {
             res.status(200).json({msg: "token expired"});
         }
     });
+};
+
+// Function to Recover Passwd
+exports.recoverPasswd = function (req, res) {
+    "use strict";
+    /*
+        curl -X POST http://localhost:5100/recoverpasswd
+             -H "Content-Type: application/json"
+             -d '{"userId": "someone@example.com"}'
+    */
+    if (!req.body.userId) {
+        res.status(400).json({msg: "bad request"});
+        return;
+    }
+    user.recoverPasswd(req.body.userId, function (error, success) {
+        if (error) {
+            res.status(400).json({msg: "request failed"});
+            return;
+        }
+        if (success) {
+            res.status(200);
+        }
+    });
+};
+
+// Function to change the passwd
+exports.changePasswd = function (req, res) {
+    "use strict";
+    /*
+        curl -X POST http://localhost:5100/changepasswd/someone@example.com?sign=signature&ts=timestamp
+             -H "Content-Type: application/json"
+             -d '{"passwd": "123456", "confirmPasswd": "123456"}'
+    */
+    if (!req.body.passwd && !req.body.confirmPasswd && !req.param.userId && !req.query.sign && !req.query.ts) {
+        res.status(400).json({msg: "bad request"});
+        return;
+    }
+    res.status("200").json({"msg": "passwd changed"});
 };

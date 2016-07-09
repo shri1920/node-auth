@@ -1,3 +1,8 @@
+/*
+    Project: Token based Authentication
+    Author: shrisha.sb@mobinius.com
+*/
+
 /*jslint node:true*/
 
 var express    = require('express'),
@@ -20,8 +25,10 @@ router.post('/login', route.logIn);
 router.post('/logout', route.logOut);
 // Api to register the user to the system
 router.post('/registeruser', route.registerUser);
-// Api to remove the user from the system
-//router.post('/removeuser', route.removeUser);
+// Api to generate and share the recover password link
+router.post('/recoverpasswd', route.recoverPasswd);
+// Api to change the passwd
+router.post('/changepasswd/:userId', route.changePasswd);
 // Register the router
 app.use('/', router);
 
