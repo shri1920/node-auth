@@ -6,7 +6,7 @@ var Redis = function () {
         set,
         get,
         del;
-    // Function to set Token with related data
+    // Function to set the Token with related data
     set = function (info, callback) {
         var TIME_TO_LIVE = 60 * 60 * 24, authInfo;
         authInfo = {
@@ -15,31 +15,23 @@ var Redis = function () {
             scope: info.scope
         };
         redisClient.setex(info.accessToken, TIME_TO_LIVE, JSON.stringify(authInfo), function (error, success) {
-            if (error) {
-                callback(error);
-                return;
-            }
-            callback(undefined, success);
+            callback(error, success);
         });
     };
-    // Function to get Token information
-    get = function () {};
-    // Function to expire Token
+    // Function to get the Token information
+    get = function (key, callback) {
+        redisClient.get(key, function (error, reply) {
+            // reply is null when the key is missing
+            if (reply) {
+                reply = JSON.parse(reply);
+            }
+            callback(error, reply);
+        });
+    };
+    // Function to expire the Token
     del = function (token, callback) {
-        if (!token) {
-            callback();
-            return;
-        }
         redisClient.del(token, function (error, success) {
-            if (error) {
-                callback(error);
-                return;
-            }
-            if (success) {
-                callback(undefined, true);
-                return;
-            }
-            callback();
+            callback(error, success);
         });
     };
     return {
