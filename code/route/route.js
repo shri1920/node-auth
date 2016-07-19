@@ -1,43 +1,16 @@
 /*jslint node:true*/
-var user = require('../utils/user');
+var user = require('../utils/user'),
+    utils = require('../utils/utils'),
+    redis = require('../utils/redisHelper');
 
-// Function to register new user
-exports.registerUser = function (req, res) {
-    "use strict";
-    /*
-        curl -X POST http://localhost:5100/registeruser
-             -H "Content-Type: application/json"
-             -d '{"userId": "someone@example.com", "passwd": "123456", "firstName": "Fname", "lastName": "Lname"}'
-    */
-    var options = req.body || {};
-    if (!options.userId || !options.passwd || !options.firstName) {
-        res.status(400).json({code: "MISSING_PARAMETER", msg: "require parameter missing"});
-        return;
-    }
-    console.log("[Register User] | Request received from " + options.userId);
-    user.registerUser(options, function (error, success) {
-        if (error) {
-            if (error.status === "409") {
-                console.log("[Register User] | User registered already" + options.userId);
-                res.status(409).json({"msg": "user registered already"});
-                return;
-            }
-            console.log("[Register User] | error creating user" + options.userId);
-            res.status(400).json({"msg": "error creating user"});
-            return;
-        }
-        res.status(201).json({"msg": success});
-    });
-};
-
-// Function to initiate the use session
+// Function to initiate the user Token generation
 exports.logIn = function (req, res) {
-    "use strict";
     /*
         curl -X POST http://localhost:5100/login
              -H "Content-Type: application/json"
              -d '{"userId": "someone@example.com", "passwd": "123456"}'
     */
+    "use strict";
     var userId = req.body.userId,
         passwd = req.body.passwd;
     // userId and passwd are require field for login
@@ -45,35 +18,49 @@ exports.logIn = function (req, res) {
         res.status(400).json({msg: "bad request"});
         return;
     }
-    console.log("[Login] | Request received from " + userId);
-    user.getToken(userId, passwd, function (error, token) {
+    // Check if the user is available or not (Registered to system or not)
+    user.isValidUser(userId, passwd, function (error, status) {
         if (error) {
-            console.log("[Login] | Login failed " + userId);
-            res.status(400).json({msg: "login failed"});
+            res.status(404).json({msg: "user not found"});
             return;
         }
-        token.userId = userId;
-        user.storeToken(token, function (error, success) {
-            if (error) {
-                console.log("[Login] | Login failed " + userId);
-                res.status(401).json({msg: "login failed"});
-                return;
-            }
-            if (success) {
-                res.status(200).json(token);
-            }
-        });
+        if (status) {
+            // If valid generate token for the user
+            utils.generateToken(function (error, token) {
+                if (error) {
+                    res.status(400).json({msg: "unable to get access token"});
+                    return;
+                }
+                if (token) {
+                    token.userId = userId;
+                    // Store the Token in Key Value store.
+                    redis.set(token, function (error, success) {
+                        if (error) {
+                            res.status(400).json({msg: "unable to get access token"});
+                            return;
+                        }
+                        if (success) {
+                            res.status(200).json(token);
+                        }
+                    });
+                }
+            });
+        }
     });
 };
 
-// Function to Exire the User Session
+// Function to expire the user Token
 exports.logOut = function (req, res) {
+    /*
+        curl -X POST http://localhost:5100/logout
+             -H "Authorization: Bearer token-123-456-789"
+    */
     "use strict";
     if (!req.headers.authorization) {
         res.status(401).json({msg: "unauthorized"});
         return;
     }
-    user.expireToken(req.headers.authorization, function (error, success) {
+    utils.expireToken(req.headers.authorization, function (error, success) {
         if (error) {
             res.status(400).json({msg: ""});
             return;
@@ -82,42 +69,4 @@ exports.logOut = function (req, res) {
             res.status(200).json({msg: "token expired"});
         }
     });
-};
-
-// Function to Recover Passwd
-exports.recoverPasswd = function (req, res) {
-    "use strict";
-    /*
-        curl -X POST http://localhost:5100/recoverpasswd
-             -H "Content-Type: application/json"
-             -d '{"userId": "someone@example.com"}'
-    */
-    if (!req.body.userId) {
-        res.status(400).json({msg: "bad request"});
-        return;
-    }
-    user.recoverPasswd(req.body.userId, function (error, success) {
-        if (error) {
-            res.status(400).json({msg: "request failed"});
-            return;
-        }
-        if (success) {
-            res.status(200);
-        }
-    });
-};
-
-// Function to change the passwd
-exports.changePasswd = function (req, res) {
-    "use strict";
-    /*
-        curl -X POST http://localhost:5100/changepasswd/someone@example.com?sign=signature&ts=timestamp
-             -H "Content-Type: application/json"
-             -d '{"passwd": "123456", "confirmPasswd": "123456"}'
-    */
-    if (!req.body.passwd && !req.body.confirmPasswd && !req.param.userId && !req.query.sign && !req.query.ts) {
-        res.status(400).json({msg: "bad request"});
-        return;
-    }
-    res.status("200").json({"msg": "passwd changed"});
 };

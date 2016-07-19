@@ -16,7 +16,6 @@ var Redis = function () {
         };
         redisClient.setex(info.accessToken, TIME_TO_LIVE, JSON.stringify(authInfo), function (error, success) {
             if (error) {
-                console.log("test");
                 callback(error);
                 return;
             }
@@ -24,9 +23,7 @@ var Redis = function () {
         });
     };
     // Function to get Token information
-    get = function () {
-        
-    };
+    get = function () {};
     // Function to expire Token
     del = function (token, callback) {
         if (!token) {

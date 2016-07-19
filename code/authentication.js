@@ -1,3 +1,4 @@
+
 /*
     Project: Token based Authentication
     Author: shrisha.sb@mobinius.com
@@ -19,17 +20,11 @@ app.use(bodyParser.json());
 app.set('port', process.env.PORT || 5100);
 
 router = express.Router();
-// Api to set the session
+// Api to allow the user to log in
 router.post('/login', route.logIn);
-// Api to destroy the user session
+// Api to log out the logged in user
 router.post('/logout', route.logOut);
-// Api to register the user to the system
-router.post('/registeruser', route.registerUser);
-// Api to generate and share the recover password link
-router.post('/recoverpasswd', route.recoverPasswd);
-// Api to change the passwd
-router.post('/changepasswd/:userId', route.changePasswd);
-// Register the router
+
 app.use('/', router);
 
 // Start the Authentication server
