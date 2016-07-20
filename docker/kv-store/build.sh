@@ -16,7 +16,7 @@ fi
 
 # To display information about the current build
 echo '\n'
-echo ver mMolecules Auth-Store (Redis) build @ `${DATE}` by `${WHOAMI}`
+echo ver 'mMolecules Auth-Store (Redis)' build @ `${DATE}` by `${WHOAMI}`
 echo '\n'
 cat ./banner.txt
 echo '\n'
@@ -26,5 +26,5 @@ echo '\n ----- Building the Docker Image : docker.mmolecules/auth-store ----- \n
 docker build -t docker.mmolecules/auth-store .
 
 echo '\n ----- To start the Docker container ----- \n'
-echo 'docker run --name mmolecules-auth -d docker.mmolecules/auth-store'
+echo 'docker run --name mmolecules-auth-store -d docker.mmolecules/auth-store'
 
