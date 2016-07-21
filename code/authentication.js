@@ -24,6 +24,8 @@ router = express.Router();
 router.post('/login', route.logIn);
 // Api to log out the logged in user
 router.post('/logout', route.logOut);
+// Api to register the user to the system
+router.post('/registeruser', route.registerUser);
 
 app.use('/', router);
 

@@ -70,3 +70,29 @@ exports.logOut = function (req, res) {
         }
     });
 };
+
+// Function to register new user
+exports.registerUser = function (req, res) {
+    "use strict";
+    /*
+        curl -X POST http://localhost:5100/registeruser
+             -H "Content-Type: application/json"
+             -d '{"userId": "someone@example.com", "passwd": "123456", "firstName": "Fname", "lastName": "Lname"}'
+    */
+    var options = req.body || {};
+    if (!options.userId || !options.passwd || !options.firstName) {
+        res.status(400).json({msg: "bad request"});
+        return;
+    }
+    user.registerUser(options, function (error, success) {
+        if (error) {
+            if (error.status === "409") {
+                res.status(409).json({"msg": "user registered already"});
+                return;
+            }
+            res.status(400).json({"msg": "error creating user"});
+            return;
+        }
+        res.status(201).json({"msg": success});
+    });
+};

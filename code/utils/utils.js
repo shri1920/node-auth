@@ -5,7 +5,8 @@ var crypto = require('crypto'),
 Utils = function () {
     "use strict";
     var generateToken,
-        expireToken;
+        expireToken,
+        createHash;
     // Funcation to generate the access token
     generateToken = function (callback) {
         var TOKEN_LENGTH = 32;
@@ -30,9 +31,14 @@ Utils = function () {
             });
         }
     };
+    // Function to create hash from passwd
+    createHash = function (value) {
+        return crypto.createHash("sha256").update(value, "utf8").digest("base64");
+    };
     return {
         generateToken: generateToken,
-        expireToken: expireToken
+        expireToken: expireToken,
+        createHash: createHash
     };
 };
 module.exports = new Utils();
