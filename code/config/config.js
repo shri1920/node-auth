@@ -1,7 +1,11 @@
 /*jslint node:true*/
 var Config = function () {
     "use strict";
-    var url = require('url'), couchdb = url.parse('http://localhost:5984'), getPort, userName, passwd;
+    var url = require('url'),
+        couchdb = url.parse('http://localhost:5984'),
+        getPort,
+        userName,
+        passwd;
     getPort = function getPort(couchdb) {
         var port;
         if (couchdb.port) {

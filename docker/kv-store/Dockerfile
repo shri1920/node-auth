@@ -1,21 +1,9 @@
-FROM nodesource/node:4.0
+FROM         ubuntu:14.04
 
-MAINTAINER shrisha.sb@gmail.com
+MAINTAINER   shrisha.sb@gmail.com
 
-RUN mkdir /opt/mMolecules-auth
+RUN          apt-get update && apt-get install -y redis-server
 
-COPY   ./source/authentication.js  /opt/mMolecules-auth/
+RUN          wget -qO- https://deb.nodesource.com/setup_4.x | bash -
 
-COPY   ./source/package.json       /opt/mMolecules-auth/
-
-COPY   ./source/route/*            /opt/mMolecules-auth/route/
-
-COPY   ./source/utils/*            /opt/mMolecules-auth/utils/
-
-RUN cd /opt/mMolecules-auth; npm install .
-
-RUN mkdir /var/log/mMolecules-auth; chmod 777 /var/log/mMolecules-auth
-
-WORKDIR /opt/mMolecules-auth
-
-ENTRYPOINT ["node", "/opt/mMolecules-auth/authentication.js"]
+RUN          apt-get install nodejs

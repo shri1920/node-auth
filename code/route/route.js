@@ -21,6 +21,10 @@ exports.logIn = function (req, res) {
     // Check if the user is available or not (Registered to system or not)
     user.isValidUser(userId, passwd, function (error, status) {
         if (error) {
+            if (error.status === 400) {
+                res.status(404).json({msg: "bad request"});
+                return;
+            }
             res.status(404).json({msg: "user not found"});
             return;
         }

@@ -10,7 +10,7 @@ Utils = function () {
     // Funcation to generate the access token
     generateToken = function (callback) {
         var TOKEN_LENGTH = 32;
-        // To geneta
+        // To generate token
         crypto.randomBytes(TOKEN_LENGTH, function (error, token) {
             if (error) {
                 callback(error, undefined);
