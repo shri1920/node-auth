@@ -5,11 +5,14 @@ var User = function () {
     var cradle = require('cradle'),
         config = require('../config/config'),
         utils  = require('./utils'),
+        redis  = require('../utils/redisHelper'),
+        mail   = require('../utils/mailHelper'),
         isValidUser,
         registerUser,
         createConnection,
         setDatabase,
-        getDoc;
+        getDoc,
+        passwdRecoveryLink;
     // Function to open a connection for CouchDB
     createConnection = function () {
         var connection;
@@ -77,9 +80,31 @@ var User = function () {
             }
         });
     };
+    passwdRecoveryLink = function (userId, callback) {
+        getDoc("_users", "org.couchdb.user:" + userId, function (error, result) {
+            if (error) {
+                callback({"status": "404", "reason": "user not found"}, undefined);
+                return;
+            }
+            if (result) {
+                var token, ttl;
+                token = utils.createHash(userId + new Date().toISOString());
+                ttl   = 60 * 60; // Recovery link will be live for MAX 1 HOUR
+                redis.set(token, ttl, function (error, success) {
+                    if (success) {
+                        return;
+                    }
+                    //from, to, sub, text, html, callback
+                    mail.send();
+                    callback(error, undefined);
+                });
+            }
+        });
+    };
     return {
         isValidUser : isValidUser,
-        registerUser : registerUser
+        registerUser : registerUser,
+        passwdRecoveryLink : passwdRecoveryLink
     };
 };
 module.exports = new User();

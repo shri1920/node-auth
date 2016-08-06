@@ -3,7 +3,12 @@ var Logs;
 Logs = function () {
     "use strict";
     var write;
-    write = function () {};
+    write = function (when, msg, user) {
+        when = when || "-----";
+        msg  = msg  || "-----";
+        user = user || "-----";
+        console.log(when.toUpperCase() + " | " + msg + " | " + user);
+    };
     return {
         write: write
     };

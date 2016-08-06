@@ -7,8 +7,8 @@ var Redis = function () {
         get,
         del;
     // Function to set the Token with related data
-    set = function (info, callback) {
-        var TIME_TO_LIVE = 60 * 60 * 24, authInfo;
+    set = function (info, ttl, callback) {
+        var TIME_TO_LIVE = ttl || 60 * 60 * 24, authInfo;
         authInfo = {
             userId: info.userId,
             tokenType: info.tokenType,
@@ -30,8 +30,18 @@ var Redis = function () {
     };
     // Function to expire the Token
     del = function (token, callback) {
-        redisClient.del(token, function (error, success) {
-            callback(error, success);
+        redisClient.exists(token, function (error, result) {
+            if (result === 1) {
+                redisClient.del(token, function (error, success) {
+                    callback(error, success);
+                });
+                return;
+            }
+            if (result === 0) {
+                callback({"status": "401", "reason": "Unauthorized request"}, undefined);
+                return;
+            }
+            callback(error, result);
         });
     };
     return {
