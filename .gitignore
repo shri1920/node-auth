@@ -1,3 +1,9 @@
 node_modules
+
 *~
+
+*.orig
+
 source
+
+banner.txt
