@@ -28,6 +28,8 @@ router.post('/logout', route.logOut);
 router.post('/registeruser', route.registerUser);
 // Api to get passwd recovery link
 router.post('/forgotpasswd', route.forgotPasswd);
+// Api to change the passwd
+router.post('/changepasswd/:userId/:token', route.changePasswd);
 
 app.use('/', router);
 

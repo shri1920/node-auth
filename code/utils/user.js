@@ -12,7 +12,8 @@ var User = function () {
         createConnection,
         setDatabase,
         getDoc,
-        passwdRecoveryLink;
+        passwdRecoveryLink,
+        changePasswd;
     // Function to open a connection for CouchDB
     createConnection = function () {
         var connection;
@@ -87,10 +88,9 @@ var User = function () {
                 return;
             }
             if (result) {
-                var token, ttl;
+                var token;
                 token = utils.createHash(userId + new Date().toISOString());
-                ttl   = 60 * 60; // Recovery link will be live for MAX 1 HOUR
-                redis.set(token, ttl, function (error, success) {
+                redis.set({recoveryToken: token}, function (error, success) {
                     if (success) {
                         return;
                     }
@@ -101,10 +101,37 @@ var User = function () {
             }
         });
     };
+    changePasswd = function (options, callback) {
+        getDoc("_users", "org.couchdb.user:" + options.userId, function (error, result) {
+            if (error) {
+                callback({"status": "404", "reason": "user not found"}, undefined);
+                return;
+            }
+            if (result) {
+                redis.get(options.token, function (error, available) {
+                    if (error) {
+                        callback({"status": "400", "reason": "invalid request"}, undefined);
+                        return;
+                    }
+                    if (available) {
+                        var connection = createConnection(),
+                            db = setDatabase(connection, "_users");
+                        db.save("org.couchdb.user:" + options.userId, {
+                            passwd : utils.createHash(options.passwd)
+                        }, function (error, result) {
+                            callback(error, result);
+                        });
+                    }
+                });
+            }
+        });
+        callback();
+    };
     return {
         isValidUser : isValidUser,
         registerUser : registerUser,
-        passwdRecoveryLink : passwdRecoveryLink
+        passwdRecoveryLink : passwdRecoveryLink,
+        changePasswd : changePasswd
     };
 };
 module.exports = new User();

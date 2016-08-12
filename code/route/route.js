@@ -44,7 +44,7 @@ exports.logIn = function (req, res) {
                 if (token) {
                     token.userId = userId;
                     // Store the Token in Key Value store.
-                    redis.set(token, null, function (error, success) {
+                    redis.set(token, function (error, success) {
                         if (error) {
                             log.write("Login", "unable to get access token", userId);
                             res.status(400).json({msg: "unable to get access token"});
@@ -150,5 +150,42 @@ exports.forgotPasswd = function (req, res) {
         }
         log.write("Forgot Passwd", "passwd recovery link sent", options.userId);
         res.status(200).json({"msg": "passwd recovery link sent"});
+    });
+};
+
+// Function to Change Password
+exports.changePasswd = function (req, res) {
+    "use strict";
+    /*
+        curl -X POST http://localhost:5100/changepasswd
+             -H "Content-Type: application/json"
+             -d '{"passwd": "new-passwd"}'
+    */
+    var options = req.body || {};
+    if (!req.params.userId || !req.params.token || !options.passwd) {
+        log.write("Change Passwd", "missing required parameter");
+        res.status(400).json({msg: "bad request"});
+        return;
+    }
+    log.write("Change Passwd", "request received", options.userId);
+    user.changePasswd({userId: req.params.userId, token: req.params.token, passwd: options.passwd}, function (error, success) {
+        if (error) {
+            if (error.status === 404) {
+                log.write("Forgot Passwd", "user not found", options.userId);
+                res.status(404).json({"msg": "user not found"});
+                return;
+            }
+            if (error.status === 400) {
+                log.write("Change Passwd", "user not found", options.userId);
+                res.status(400).json({"msg": "invalid request"});
+                return;
+            }
+            res.status(400).json({"msg": "bad request"});
+            return;
+        }
+        if (success) {
+            res.status(200).json({"msg": "password changed"});
+            return;
+        }
     });
 };
