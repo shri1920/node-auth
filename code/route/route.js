@@ -157,7 +157,7 @@ exports.forgotPasswd = function (req, res) {
 exports.changePasswd = function (req, res) {
     "use strict";
     /*
-        curl -X POST http://localhost:5100/changepasswd
+        curl -X POST http://localhost:5100/changepasswd/<user id>/<token>
              -H "Content-Type: application/json"
              -d '{"passwd": "new-passwd"}'
     */

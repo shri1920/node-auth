@@ -7,6 +7,7 @@ var User = function () {
         utils  = require('./utils'),
         redis  = require('../utils/redisHelper'),
         mail   = require('../utils/mailHelper'),
+        lang   = require('../utils/langHelper').load(),
         isValidUser,
         registerUser,
         createConnection,
@@ -90,12 +91,25 @@ var User = function () {
             if (result) {
                 var token;
                 token = utils.createHash(userId + new Date().toISOString());
-                redis.set({recoveryToken: token}, function (error, success) {
+                redis.set({recoveryToken: token, userId: userId}, function (error, success) {
                     if (success) {
+                        var recoveryLink, sub = "", body = "";
+                        // Link for passwd recovery
+                        recoveryLink = encodeURIComponent(userId) + "/" + token;
+                        // Email Subject
+                        sub  += "Company name" + " | " + lang.m_psd_recover_sub;
+                        // Email body
+                        body += "<p>" + lang.m_dear + userId + "</p>";
+                        body += "<p>" + lang.m_psd_recover_msg_1 + "</p>";
+                        body += "<p>" + recoveryLink + "</p>";
+                        body += "<p>" + lang.m_psd_recover_msg_2 + "</p>";
+                        body += "<p>" + lang.m_regards  + "</p>" + "Administrator";
+                        //to, sub, body, callback
+                        mail.send(userId, sub, body, function (error, success) {
+                            callback(error, success);
+                        });
                         return;
                     }
-                    //from, to, sub, text, html, callback
-                    mail.send();
                     callback(error, undefined);
                 });
             }

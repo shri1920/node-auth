@@ -1,6 +1,6 @@
 /*jslint node:true*/
 var crypto = require('crypto'),
-    redis = require('./redisHelper'),
+    redis  = require('./redisHelper'),
     Utils;
 Utils = function () {
     "use strict";
@@ -35,6 +35,7 @@ Utils = function () {
     createHash = function (value) {
         return crypto.createHash("sha256").update(value, "utf8").digest("base64");
     };
+    // Function to prepare message based on request
     return {
         generateToken: generateToken,
         expireToken: expireToken,
