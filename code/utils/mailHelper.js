@@ -4,8 +4,8 @@ var Mailer = function () {
     var mailer = require('nodemailer'),
         send;
     // Function to send mail
-    send = function (from, to, sub, text, html, callback) {
-        var transport, mailOptions;
+    send = function (to, sub, body, callback) {
+        /*var transport, mailOptions;
         transport = mailer.createTransport("SMTP", {
             service: "Gmail",
             auth: {
@@ -14,16 +14,20 @@ var Mailer = function () {
             }
         });
         mailOptions = {
-            from    : from,
+            from    : "someone@companyname.com",
             to      : to,
             subject : sub,
-            text    : text, // plain text body
-            html    : html  // html body
-        };
+            text    : body
+        };*/
+        console.log(to);
+        console.log(sub);
+        console.log(body);
+        console.log(callback);
         // send mail with defined transport object
-        transport.sendMail(mailOptions, function (error, response) {
+        callback(undefined, true);
+        /*transport.sendMail(mailOptions, function (error, response) {
             callback(error, response);
-        });
+        });*/
     };
     return {
         send: send

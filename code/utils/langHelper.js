@@ -5,9 +5,9 @@ var Lang = function () {
     // Function to load the Language based on User preferred language
     loadLangFile = function getPort(whichLang) {
         var fileName, langData;
-        whichLang = (whichLang.toLowerCase() || "en-us") + ".json";
+        whichLang = (whichLang ? whichLang.toLowerCase() : "en-us") + ".json";
         fileName = "lang_" + whichLang.toLowerCase();
-        langData = require("./" + fileName) || {};
+        langData = require("../lang/" + fileName) || {};
         return langData;
     };
     return {

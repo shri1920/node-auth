@@ -131,6 +131,7 @@ exports.forgotPasswd = function (req, res) {
              -d '{"userId": "someone@example.com"}'
     */
     var options = req.body || {};
+    console.log(options);
     if (!options.userId) {
         log.write("Forgot Passwd", "missing required parameter");
         res.status(400).json({msg: "bad request"});
@@ -157,18 +158,18 @@ exports.forgotPasswd = function (req, res) {
 exports.changePasswd = function (req, res) {
     "use strict";
     /*
-        curl -X POST http://localhost:5100/changepasswd/<user id>/<token>
+        curl -X POST http://localhost:5100/changepasswd/<user id>?signature=<token>
              -H "Content-Type: application/json"
              -d '{"passwd": "new-passwd"}'
     */
     var options = req.body || {};
-    if (!req.params.userId || !req.params.token || !options.passwd) {
+    if (!req.params.userId || !req.query.signature || !options.passwd) {
         log.write("Change Passwd", "missing required parameter");
         res.status(400).json({msg: "bad request"});
         return;
     }
-    log.write("Change Passwd", "request received", options.userId);
-    user.changePasswd({userId: req.params.userId, token: req.params.token, passwd: options.passwd}, function (error, success) {
+    log.write("Change Passwd", "request received", req.params.userId);
+    user.changePasswd({userId: req.params.userId, signature: req.query.signature, passwd: options.passwd}, function (error, success) {
         if (error) {
             if (error.status === 404) {
                 log.write("Forgot Passwd", "user not found", options.userId);

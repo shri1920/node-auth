@@ -29,10 +29,10 @@ router.post('/registeruser', route.registerUser);
 // Api to get passwd recovery link
 router.post('/forgotpasswd', route.forgotPasswd);
 // Api to change the passwd
-router.post('/changepasswd/:userId/:token', route.changePasswd);
+router.post('/changepasswd/:userId', route.changePasswd);
 
 app.use('/', router);
 
 // Start the Authentication server
 app.listen(app.get('port'));
-console.log('Authentication server running at port no: ' + app.get('port'));
+console.log('Authentication server Started @ ' + new Date() + ' Running on port no: ' + app.get('port'));

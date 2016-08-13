@@ -82,6 +82,7 @@ var User = function () {
             }
         });
     };
+    // Function to generate
     passwdRecoveryLink = function (userId, callback) {
         getDoc("_users", "org.couchdb.user:" + userId, function (error, result) {
             if (error) {
@@ -90,12 +91,13 @@ var User = function () {
             }
             if (result) {
                 var token;
-                token = utils.createHash(userId + new Date().toISOString());
+                console.log(userId + new Date().getTime());
+                token = utils.createHash(userId + new Date().getTime(), "md5");
                 redis.set({recoveryToken: token, userId: userId}, function (error, success) {
                     if (success) {
                         var recoveryLink, sub = "", body = "";
                         // Link for passwd recovery
-                        recoveryLink = encodeURIComponent(userId) + "/" + token;
+                        recoveryLink = encodeURIComponent(userId) + "?signature=" + token;
                         // Email Subject
                         sub  += "Company name" + " | " + lang.m_psd_recover_sub;
                         // Email body
@@ -116,30 +118,31 @@ var User = function () {
         });
     };
     changePasswd = function (options, callback) {
-        getDoc("_users", "org.couchdb.user:" + options.userId, function (error, result) {
+        redis.get(options.signature, function (error, available) {
             if (error) {
-                callback({"status": "404", "reason": "user not found"}, undefined);
+                callback({"status": "400", "reason": "invalid request"}, undefined);
                 return;
             }
-            if (result) {
-                redis.get(options.token, function (error, available) {
+            if (available) {
+                getDoc("_users", "org.couchdb.user:" + options.userId, function (error, result) {
                     if (error) {
-                        callback({"status": "400", "reason": "invalid request"}, undefined);
+                        callback({"status": "404", "reason": "user not found"}, undefined);
                         return;
                     }
-                    if (available) {
+                    if (result) {
+                        result.passwd = utils.createHash(options.passwd);
                         var connection = createConnection(),
                             db = setDatabase(connection, "_users");
-                        db.save("org.couchdb.user:" + options.userId, {
-                            passwd : utils.createHash(options.passwd)
-                        }, function (error, result) {
+                        db.save("org.couchdb.user:" + options.userId, result, function (error, result) {
+                            if (result) {
+                                redis.del(options.signature);
+                            }
                             callback(error, result);
                         });
                     }
                 });
             }
         });
-        callback();
     };
     return {
         isValidUser : isValidUser,

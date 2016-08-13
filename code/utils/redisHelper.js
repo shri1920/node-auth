@@ -15,7 +15,9 @@ var Redis = function () {
         if (info.accessToken) {
             key = info.accessToken;
             redisClient.setex(key, TIME_TO_LIVE, JSON.stringify(info), function (error, success) {
-                callback(error, success);
+                if (callback && typeof callback === "function") {
+                    callback(error, success);
+                }
             });
             return;
         }
@@ -23,7 +25,9 @@ var Redis = function () {
             key = info.recoveryToken;
             TIME_TO_LIVE = 60 * 60; // Recovery link will be live for MAX 1 HOUR
             redisClient.setex(key, TIME_TO_LIVE, JSON.stringify(info), function (error, success) {
-                callback(error, success);
+                if (callback && typeof callback === "function") {
+                    callback(error, success);
+                }
             });
             return;
         }
@@ -35,7 +39,9 @@ var Redis = function () {
             if (reply) {
                 reply = JSON.parse(reply);
             }
-            callback(error, reply);
+            if (callback && typeof callback === "function") {
+                callback(error, reply);
+            }
         });
     };
     // Function to expire the Token
@@ -43,15 +49,21 @@ var Redis = function () {
         redisClient.exists(token, function (error, result) {
             if (result === 1) {
                 redisClient.del(token, function (error, success) {
-                    callback(error, success);
+                    if (callback && typeof callback === "function") {
+                        callback(error, success);
+                    }
                 });
                 return;
             }
             if (result === 0) {
-                callback({"status": "401", "reason": "Unauthorized request"}, undefined);
+                if (callback && typeof callback === "function") {
+                    callback({"status": "401", "reason": "Unauthorized request"}, undefined);
+                }
                 return;
             }
-            callback(error, result);
+            if (callback && typeof callback === "function") {
+                callback(error, result);
+            }
         });
     };
     return {

@@ -32,8 +32,12 @@ Utils = function () {
         }
     };
     // Function to create hash from passwd
-    createHash = function (value) {
-        return crypto.createHash("sha256").update(value, "utf8").digest("base64");
+    createHash = function (value, type) {
+        type = type || "sha256";
+        if (type === "md5") {
+            return crypto.createHash(type).update(value).digest("hex");
+        }
+        return crypto.createHash(type).update(value, "utf8").digest("base64");
     };
     // Function to prepare message based on request
     return {
