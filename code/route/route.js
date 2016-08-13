@@ -122,6 +122,42 @@ exports.registerUser = function (req, res) {
     });
 };
 
+// Function to Confirm the user registration
+exports.confirmUser = function (req, res) {
+    "use strict";
+    /*
+        curl -X POST http://localhost:5100/confirmuser/<user id>?signature=<token>
+    */
+    var options = req.body || {};
+    console.log(options);
+    if (!options.userId || !req.query.signature) {
+        log.write("Confirm User", "missing required parameter");
+        res.status(400).json({msg: "bad request"});
+        return;
+    }
+    log.write("Confirm User", "request received", options.userId);
+    user.confirmUser({userId: req.params.userId, signature: req.query.signature}, function (error, success) {
+        if (error) {
+            if (error.status === 404) {
+                log.write("Confirm User", "user not found", options.userId);
+                res.status(404).json({"msg": "user not found"});
+                return;
+            }
+            if (error.status === 400) {
+                log.write("Confirm User", "invalid request", options.userId);
+                res.status(400).json({"msg": "invalid request"});
+                return;
+            }
+            res.status(400).json({"msg": "bad request"});
+            return;
+        }
+        if (success) {
+            res.status(200).json({"msg": "user registration confirmed"});
+            return;
+        }
+    });
+};
+
 // Function to Get Password recovery link
 exports.forgotPasswd = function (req, res) {
     "use strict";

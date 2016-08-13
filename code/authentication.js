@@ -26,6 +26,8 @@ router.post('/login', route.logIn);
 router.post('/logout', route.logOut);
 // Api to register the user to the system
 router.post('/registeruser', route.registerUser);
+// Api to confirm user registration
+router.post('/confirmuser/:userId', route.confirmUser);
 // Api to get passwd recovery link
 router.post('/forgotpasswd', route.forgotPasswd);
 // Api to change the passwd

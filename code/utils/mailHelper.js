@@ -22,7 +22,6 @@ var Mailer = function () {
         console.log(to);
         console.log(sub);
         console.log(body);
-        console.log(callback);
         // send mail with defined transport object
         callback(undefined, true);
         /*transport.sendMail(mailOptions, function (error, response) {

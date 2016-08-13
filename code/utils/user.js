@@ -10,6 +10,7 @@ var User = function () {
         lang   = require('../utils/langHelper').load(),
         isValidUser,
         registerUser,
+        confirmUser,
         createConnection,
         setDatabase,
         getDoc,
@@ -77,12 +78,73 @@ var User = function () {
                     roles         : [],
                     type          : "user"
                 }, function (error, result) {
+                    if (result) {
+                        // Send registration confirmation link after registration
+                        var token = utils.createHash(userInfo.userId + new Date().getTime(), "md5");
+                        redis.set({confirmationToken: token, userId: userInfo.userId, type: 'confirm user'}, function (error, success) {
+                            if (success) {
+                                var confirmLink, sub = "", body = "";
+                                // Link for passwd recovery
+                                confirmLink = encodeURIComponent(userInfo.userId) + "?signature=" + token;
+                                // Email Subject
+                                sub  += lang.m_comp_name + " | " + lang.m_usr_confirm_sub;
+                                // Email body
+                                body += "<p>" + lang.m_dear + userInfo.userId + "</p>";
+                                body += "<p>" + lang.m_usr_confirm_msg_1 + "</p>";
+                                body += "<p>" + confirmLink + "</p>";
+                                body += "<p>" + lang.m_regards  + "</p>" + "Administrator";
+                                //to, sub, body, callback
+                                mail.send(userInfo.userId, sub, body, function (error, success) {
+                                    callback(error, success);
+                                });
+                                return;
+                            }
+                            callback(error, undefined);
+                        });
+                        return;
+                    }
                     callback(error, result);
                 });
             }
         });
     };
-    // Function to generate
+    // Function to confirm user registration
+    confirmUser = function (options, callback) {
+        // userId signature
+        redis.get(options.signature, function (error, available) {
+            if (error) {
+                callback({"status": "400", "reason": "invalid request"}, undefined);
+                return;
+            }
+            if (available && available.type === "confirm user") {
+                getDoc("_users", "org.couchdb.user:" + options.userId, function (error, result) {
+                    if (error) {
+                        callback({"status": "404", "reason": "user not found"}, undefined);
+                        return;
+                    }
+                    if (result && result.confirmPasswd) {
+                        result.passwd = options.confirmPasswd;
+                        // Remove confirm passwd field
+                        delete result.confirmPasswd;
+                        var connection = createConnection(),
+                            db = setDatabase(connection, "_users");
+                        db.save("org.couchdb.user:" + options.userId, result, function (error, result) {
+                            if (result) {
+                                redis.del(options.signature);
+                            }
+                            callback(error, result);
+                        });
+                        return;
+                    }
+                    callback(undefined, 'user already confirmed');
+                });
+                return;
+            }
+            callback({"status": "400", "reason": "invalid request"}, undefined);
+            return;
+        });
+    };
+    // Function to generate password recovery link and share the same with requested user
     passwdRecoveryLink = function (userId, callback) {
         getDoc("_users", "org.couchdb.user:" + userId, function (error, result) {
             if (error) {
@@ -91,15 +153,14 @@ var User = function () {
             }
             if (result) {
                 var token;
-                console.log(userId + new Date().getTime());
                 token = utils.createHash(userId + new Date().getTime(), "md5");
-                redis.set({recoveryToken: token, userId: userId}, function (error, success) {
+                redis.set({recoveryToken: token, userId: userId, type: 'password recovery'}, function (error, success) {
                     if (success) {
                         var recoveryLink, sub = "", body = "";
                         // Link for passwd recovery
                         recoveryLink = encodeURIComponent(userId) + "?signature=" + token;
                         // Email Subject
-                        sub  += "Company name" + " | " + lang.m_psd_recover_sub;
+                        sub  += lang.m_comp_name + " | " + lang.m_psd_recover_sub;
                         // Email body
                         body += "<p>" + lang.m_dear + userId + "</p>";
                         body += "<p>" + lang.m_psd_recover_msg_1 + "</p>";
@@ -117,19 +178,24 @@ var User = function () {
             }
         });
     };
+    // Function to update the user password
     changePasswd = function (options, callback) {
         redis.get(options.signature, function (error, available) {
             if (error) {
                 callback({"status": "400", "reason": "invalid request"}, undefined);
                 return;
             }
-            if (available) {
+            if (available && available.type === "password recovery") {
                 getDoc("_users", "org.couchdb.user:" + options.userId, function (error, result) {
                     if (error) {
                         callback({"status": "404", "reason": "user not found"}, undefined);
                         return;
                     }
                     if (result) {
+                        // Remove the Confirm password Key, If the user is requests to update passwd without confirming user registration
+                        if (result.confirmPasswd) {
+                            delete result.confirmPasswd;
+                        }
                         result.passwd = utils.createHash(options.passwd);
                         var connection = createConnection(),
                             db = setDatabase(connection, "_users");
@@ -141,12 +207,16 @@ var User = function () {
                         });
                     }
                 });
+                return;
             }
+            callback({"status": "400", "reason": "invalid request"}, undefined);
+            return;
         });
     };
     return {
         isValidUser : isValidUser,
         registerUser : registerUser,
+        confirmUser : confirmUser,
         passwdRecoveryLink : passwdRecoveryLink,
         changePasswd : changePasswd
     };
