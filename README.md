@@ -25,3 +25,7 @@ Token based Authorization service using NodeJS, Redis, CouchDB.
 #### TO VERIFY TOKEN
     curl -X POST http://localhost:5100/verify
          -H "Authorization: Bearer <token>"
+
+#### "LICENSE"
+
+[MIT](https://github.com/shri1920/node-auth/blob/master/LICENSE)
