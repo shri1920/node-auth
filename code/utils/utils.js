@@ -39,11 +39,22 @@ Utils = function () {
         }
         return crypto.createHash(type).update(value, "utf8").digest("base64");
     };
-    // Function to prepare message based on request
+    // Function to verify the Token
+    verifyToken = function (authHeader, callback) {
+        var token;
+        if (authHeader) {
+            authHeader = authHeader.split(" ");
+            token = authHeader[1];
+            redis.exists(token, function (error, success) {
+                callback(error, success);
+            });
+        }
+    };
     return {
         generateToken: generateToken,
         expireToken: expireToken,
-        createHash: createHash
+        createHash: createHash,
+        verifyToken: verifyToken
     };
 };
 module.exports = new Utils();

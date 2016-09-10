@@ -15,6 +15,18 @@ var express    = require('express'),
 // Body-parser (To parse the request body)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+/* 
+    Add to avoid cross origin access.
+    Access-Control-Allow-Origin is set to '*' so that server REST APIs are accessible for all the domains.
+    By setting domain name to some value, the API access can be restricted to only the mentioned domain. 
+    Eg, Access-Control-Allow-Origin: 'mywebsite.com'
+*/
+app.use(function (req, res, next) {
+    "use strict";
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "content-type");
+    next();
+});
 
 // Set the port no
 app.set('port', process.env.PORT || 5100);
@@ -32,6 +44,8 @@ router.post('/confirmuser/:userId', route.confirmUser);
 router.post('/forgotpasswd', route.forgotPasswd);
 // Api to change the passwd
 router.post('/changepasswd/:userId', route.changePasswd);
+// Api to verify the Token (To access the protected info)
+router.post('/verify', route.verify);
 
 app.use('/', router);
 

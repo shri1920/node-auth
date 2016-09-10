@@ -22,3 +22,6 @@ Token based Authorization service using NodeJS, Redis, CouchDB.
     curl -X POST http://localhost:5100/changepasswd/<user id>?signature=<token>
          -H "Content-Type: application/json"
          -d '{"passwd": "new-passwd"}'
+#### TO VERIFY TOKEN
+    curl -X POST http://localhost:5100/verify
+         -H "Authorization: Bearer <token>"

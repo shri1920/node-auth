@@ -5,7 +5,8 @@ var Redis = function () {
         redisClient = redis.createClient("6379", "127.0.0.1"),
         set,
         get,
-        del;
+        del,
+        exists;
     // Function to set the Token with related data
     set = function (info, callback) {
         var TIME_TO_LIVE, key;
@@ -66,10 +67,31 @@ var Redis = function () {
             }
         });
     };
+    // Function to check whether the token is live / valid or not
+    exists = function (token, callback) {
+        redisClient.exists(token, function (error, result) {
+            if (result === 1) {
+                if (callback && typeof callback === "function") {
+                    callback(error, result);
+                }
+                return;
+            }
+            if (result === 0) {
+                if (callback && typeof callback === "function") {
+                    callback({"status": "401", "reason": "Unauthorized request"}, undefined);
+                }
+                return;
+            }
+            if (callback && typeof callback === "function") {
+                callback(error, result);
+            }
+        });
+    };
     return {
         set: set,
         get: get,
-        del: del
+        del: del,
+        exists: exists
     };
 };
 module.exports = new Redis();

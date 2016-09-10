@@ -61,6 +61,32 @@ exports.logIn = function (req, res) {
     });
 };
 
+// Function to check whether the Token is valid or not
+exports.verify = function (req, res) {
+    /*
+        curl -X POST http://localhost:5100/verify
+             -H "Authorization: Bearer token-123-456-789"
+    */
+    "use strict";
+    if (!req.headers.authorization) {
+        log.write("Verify", "bad request");
+        res.status(401).json({msg: "bad request"});
+        return;
+    }
+    redis.exists(req.headers.authorization, function (error, success) {
+        if (error) {
+            log.write("Verify", "unauthorized request");
+            res.status(400).json({msg: "unauthorized"});
+            return;
+        }
+        if (success) {
+            log.write("Verify", "valid token");
+            res.status(200).json({msg: "valid token"});
+            return;
+        }
+    });
+};
+
 // Function to expire the user Token
 exports.logOut = function (req, res) {
     /*
